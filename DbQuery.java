@@ -13,12 +13,12 @@ import java.util.*;
 public class DbQuery {
 
 	// global variables declared here
-	public static int r;
-	public static int t;
-	public static int l;
-	public static int m;
-	public static int a;
-	public static int f;
+	public static int r; // cost of accessing an array element
+	public static int t; // cost of performing an if test
+	public static int l; // cost of performing a logical "and"
+	public static int m; // cost of a branch misprediction
+	public static int a; // cost of writing an answer to the answer array
+	public static int f; // cost of applying function fi
 
 
 	public static void main(String[] args) throws FileNotFoundException {
@@ -83,6 +83,9 @@ public class DbQuery {
 	 	double[] p1 = {0.3, 0.2};
 	 	System.out.println(combinedPlanCost(2, p1, f, 2, p,f));
 
+	 	String[] ex = {"f1", "f2", "f3", "f4"};
+	 	int k = ex.length;
+		createPlans(k, ex);
 	}
 
 	// calculates the no branch cost of a plan
@@ -125,7 +128,7 @@ public class DbQuery {
 
 		for (int i = 0; i < f.length; i++) {
 			cost += f[i];
-		} 
+		}
 
 		return cost;
 
@@ -154,4 +157,24 @@ public class DbQuery {
 		return cost;
 
 	}
+
+	// Creates a bitmap that generates all subsets
+	public static void createPlans(int k, String[] f) {
+		int cardinality = (int) Math.pow(2, k)-1;
+
+		// Generates all bit values from 0 to 2^k-1
+		for(int i = 0; i < cardinality; i++) {
+			String bit = String.format("%4s", Integer.toBinaryString(i)).replace(' ', '0');
+			System.out.println(bit);
+
+			// Generates all subsets depending on bit value
+			for(int n = 0; n < bit.length(); n++) {
+				if(bit.charAt(n) == '1') {
+					System.out.println(f[n]);
+				}
+			}
+		}
+
+	}
+
 }
