@@ -74,62 +74,116 @@ public class DbQuery {
 
 		// sample tests to see if helpers were giving expected answers
 	 	double[] f = {4.0, 4.0};
-	 	System.out.println(noBranchCost(2, f));
+	 	System.out.println(noBranchCost(2));
 
 	 	double[] p = {0.8, 0.5};
-	 	System.out.println(logicalAndCost(2, f, p));
+	 	System.out.println(logicalAndCost(2, 0.4));
 
-	 	System.out.println(fixedCost(2, f));
+	 	System.out.println(fixedCost(2));
 
 	 	double[] p1 = {0.3, 0.2};
-	 	System.out.println(combinedPlanCost(2, p1, f, 2, p,f));
+	 	System.out.print("combined plan cost:");
+	 	System.out.println(combinedPlanCost(2, 0.06, 2, 0.4));
 
-	 	//String[] ex = {"f1", "f2", "f3", "f4"};
+	 	String[] funcs = {"f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"};
 	 	double[] ex = {0.8, 0.5, 0.3, 0.2};
+	 	funcs = Arrays.copyOfRange(funcs, 0, ex.length);
+
+	 	// hashmap mapping functions to selectivities
+	 	// 	HashMap<String, Double> funcSelect = new HashMap<String, Double>();
+		// for (int i = 0; i < funcs.length; i++) {
+		// 	funcSelect.put(funcs[i], ex[i]);
+		// }
+		// prints out function with respective selectivities
+		// System.out.println(Arrays.asList(funcSelect));
+
 		int k = ex.length;
-		createPlans(k, ex);
+		SubsetRecord[] A = createSubsets(k, ex);
+
+		for (int i = 0; i < A.length; i++) {
+			System.out.println(A[i].bestCost);
+		}
+	}
+
+	public static SubsetRecord[] createSubsets(int k, double[] ex) {
+		// make subset array
+		SubsetRecord[] subsets = new SubsetRecord[(int) Math.pow(2, k)-1];
+
+		// generates all bitmap plans and then populates them to subset array
+		ArrayList<ArrayList<Double>> bitmapPlans = createPlans(k, ex);
+		
+		for (int i = 0; i < bitmapPlans.size(); i++) {
+			System.out.println(bitmapPlans.get(i));
+			int numberofBasicTerms = bitmapPlans.get(i).size();
+
+			// calcualte combined selectivity of subset
+			double prod = selectivityProd(bitmapPlans.get(i));
+
+			// creating subset record
+			SubsetRecord subset = new SubsetRecord(numberofBasicTerms, prod);
+
+			// get logical and no branch costs
+			double logicalAndCost = logicalAndCost(numberofBasicTerms, prod);
+			double noBranchCost = noBranchCost(numberofBasicTerms);
+
+			// set subset cost to logical cost
+			subset.bestCost = logicalAndCost;
+
+			// if no branch cost is lower, set subset cost to that
+			if (subset.bestCost > noBranchCost) {
+				subset.bestCost = noBranchCost;
+				subset.noBranch = true;
+			}
+
+			// Add subset to subset array
+			subsets[i] = subset;
+			
+		}
+		return subsets;
+	}
+
+	public static double selectivityProd(ArrayList<Double> list) {
+		double prod = 1;
+		for (int k = 0; k< list.size(); k++) {
+			prod *= list.get(k);
+		}
+		return prod;
 	}
 
 	// calculates the no branch cost of a plan
-	public static double noBranchCost(int k, double [] f) {
+	public static double noBranchCost(int k) {
 		double cost = k*r + (k-1)*l + a;
-		for (int i = 0; i < f.length; i++) {
-			cost += f[i];
+		for (int i = 0; i < k; i++) {
+			cost += f;
 		}
 		return cost;
 	}
 
 	// calculates the logical and cost of a plan
-	public static double logicalAndCost(int k, double [] f, double [] p) {
+	public static double logicalAndCost(int k, double prod) {
 		double cost = k*r + (k-1)*l + t;
 
-		for (int i = 0; i < f.length; i++) {
-			cost += f[i];
+		for (int i = 0; i < k; i++) {
+			cost += f;
 		}
 
-		double q = 1;
+		cost += prod*a;
 
-		for (int j =0; j < p.length; j++) {
-			q *= p[j];
+		if (prod > 0.5) {
+			prod = 1 - prod;
 		}
 
-		cost += q*a;
-
-		if (q > 0.5) {
-			q = 1 - q;
-		}
-
-		cost += m*q;
+		cost += m*prod;
 
 		return cost;
 	}
 
 	// calculates fixed cost
-	public static double fixedCost(int k, double [] f) {
+	public static double fixedCost(int k) {
 		double cost = k*r + (k-1)*l + t;
 
-		for (int i = 0; i < f.length; i++) {
-			cost += f[i];
+		for (int i = 0; i < k; i++) {
+			cost += f;
 		}
 
 		return cost;
@@ -137,36 +191,31 @@ public class DbQuery {
 	}
 
 	// calculates the combined plan cost
-	public static double combinedPlanCost(int k, double [] p, double [] f, int k1, double [] p1, double [] f1) {
-		double cost = fixedCost(k,f);
+	public static double combinedPlanCost(int k, double p, int k1, double p1) {
+		double cost = fixedCost(k);
 
-		double p_val = 1;
-		double q = 1;
-
-		for (int i = 0; i < p.length; i++) {
-			q *= p[i];
-			p_val *= p[i];
-		} 
-
-		if (q > 0.5) {
-			q = 1-q;
+		double q;
+		if (p > 0.5) {
+			q = 1-p;
+		} else {
+			q = p;
 		}
 
 		cost += m*q;
 
-		cost += p_val * logicalAndCost(k1,f1,p1);
+		cost += p * logicalAndCost(k1, p1);
 
 		return cost;
 
 	}
 
 	// Creates a bitmap that generates all subsets
-	public static void createPlans(int k, double[] f) {
-		int numberOfPlans = (int) Math.pow(2, k)-1;
+	public static ArrayList<ArrayList<Double>> createPlans(int k, double[] f) {
+		int numberOfPlans = (int) Math.pow(2, k);
 		ArrayList<ArrayList<Double>> allPlans = new ArrayList<>();
 
 		// Generates all bit values from 0 to 2^k-1
-		for(int i = 0; i < numberOfPlans; i++) {
+		for(int i = 1; i < numberOfPlans; i++) {
 			String bit = String.format("%4s", Integer.toBinaryString(i)).replace(' ', '0');
 
 			ArrayList<Double> plan = new ArrayList<>();
@@ -182,7 +231,7 @@ public class DbQuery {
 		}
 
 		for(ArrayList<Double> x : allPlans) System.out.println(x);
-
+		return allPlans;
 	}
 
 }
