@@ -83,8 +83,9 @@ public class DbQuery {
 	 	double[] p1 = {0.3, 0.2};
 	 	System.out.println(combinedPlanCost(2, p1, f, 2, p,f));
 
-	 	String[] ex = {"f1", "f2", "f3", "f4"};
-	 	int k = ex.length;
+	 	//String[] ex = {"f1", "f2", "f3", "f4"};
+	 	double[] ex = {0.8, 0.5, 0.3, 0.2};
+		int k = ex.length;
 		createPlans(k, ex);
 	}
 
@@ -159,19 +160,24 @@ public class DbQuery {
 	}
 
 	// Creates a bitmap that generates all subsets
-	public static void createPlans(int k, String[] f) {
-		int cardinality = (int) Math.pow(2, k)-1;
+	public static void createPlans(int k, double[] f) {
+		int numberOfPlans = (int) Math.pow(2, k)-1;
 
 		// Generates all bit values from 0 to 2^k-1
-		for(int i = 0; i < cardinality; i++) {
+		for(int i = 0; i < numberOfPlans; i++) {
 			String bit = String.format("%4s", Integer.toBinaryString(i)).replace(' ', '0');
 			System.out.println(bit);
+			ArrayList<Double> plans = new ArrayList<Double>();
 
 			// Generates all subsets depending on bit value
 			for(int n = 0; n < bit.length(); n++) {
 				if(bit.charAt(n) == '1') {
-					System.out.println(f[n]);
+					plans.add(f[n]);
 				}
+			}
+
+			for(Double x : plans) {
+				System.out.println(x);
 			}
 		}
 
