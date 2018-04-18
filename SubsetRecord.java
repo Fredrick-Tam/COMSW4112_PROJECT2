@@ -1,6 +1,5 @@
 public class SubsetRecord {
     int numberOfBasicTerms; // n
-    int cardinality; // k
     int product; // product of selectivities
     boolean noBranch;
     double bestCost;
@@ -14,6 +13,5 @@ public class SubsetRecord {
         bestCost = 0;
         leftChild = 0;
         rightChild = 0;
-        cardinality = 0;
     }
 }

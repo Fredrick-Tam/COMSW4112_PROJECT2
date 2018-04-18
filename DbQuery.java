@@ -8,6 +8,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.lang.reflect.Array;
 import java.util.*;
 
 public class DbQuery {
@@ -162,24 +163,25 @@ public class DbQuery {
 	// Creates a bitmap that generates all subsets
 	public static void createPlans(int k, double[] f) {
 		int numberOfPlans = (int) Math.pow(2, k)-1;
+		ArrayList<ArrayList<Double>> allPlans = new ArrayList<>();
 
 		// Generates all bit values from 0 to 2^k-1
 		for(int i = 0; i < numberOfPlans; i++) {
 			String bit = String.format("%4s", Integer.toBinaryString(i)).replace(' ', '0');
-			System.out.println(bit);
-			ArrayList<Double> plans = new ArrayList<Double>();
+
+			ArrayList<Double> plan = new ArrayList<>();
 
 			// Generates all subsets depending on bit value
 			for(int n = 0; n < bit.length(); n++) {
 				if(bit.charAt(n) == '1') {
-					plans.add(f[n]);
+					plan.add(f[n]);
 				}
 			}
 
-			for(Double x : plans) {
-				System.out.println(x);
-			}
+			allPlans.add(plan);
 		}
+
+		for(ArrayList<Double> x : allPlans) System.out.println(x);
 
 	}
 
