@@ -1,3 +1,3 @@
 #!/bin/bash
 javac DbQuery.java
-java DbQuery
+java DbQuery query.txt config.txt

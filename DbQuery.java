@@ -11,6 +11,8 @@ import java.io.PrintWriter;
 import java.util.*;
 
 public class DbQuery {
+
+	// global variables declared here
 	public static int r;
 	public static int t;
 	public static int l;
@@ -20,21 +22,27 @@ public class DbQuery {
 
 
 	public static void main(String[] args) throws FileNotFoundException {
-		// filename is taken as a command line argument and processing begins
-		String fileName = "config.txt";
-		 
-		// Construct the Scanner and PrintWriter objects for reading and writing
-		File inputFile = new File(fileName);
-		Scanner  inFile= new Scanner(inputFile);
 
-		// looping through input to split lines
-		while (inFile.hasNextLine())
+		// read in query.txt and config.txt from command line
+		String query = args[0];
+		String config = args[1];
+
+		
+		// make scanner objects to parse config and query files
+		File inputConfig = new File(config);
+		Scanner inConfig = new Scanner(inputConfig);
+
+		File inputQuery = new File(query);
+		Scanner inQuery = new Scanner(inputQuery);
+
+		// looping through config.txt to get config params and set them
+		// as global variables
+		while (inConfig.hasNextLine())
 		{
-			String line = inFile.nextLine();
-			 
-			// splits the lines into a list with values seperated by spaces
+			String line = inConfig.nextLine();
 			String[] lines = line.split(" ");
 
+			// set t,l,m,a and f from config.txt
 			if (lines[0].equals("r")) {
 				r = Integer.parseInt(lines[2]);
 			} else if (lines[0].equals("t")) {
@@ -49,14 +57,21 @@ public class DbQuery {
 				f = Integer.parseInt(lines[2]);
 			}
 		}
-			
-		System.out.println(r);
-		System.out.println(t);
-		System.out.println(l);			
-		System.out.println(m);
-		System.out.println(a);
-		System.out.println(f);
+
+		// while (inQuery.hasNextLine())
+		// {
+		// will put all code below this when it works
+		// }
 	 	
+	 	String line = inQuery.nextLine();
+		String[] lines = line.split(" ");
+		double[] selectivities = new double[lines.length];
+
+		for (int i=0; i < lines.length; i++) {
+			selectivities[i] = Double.parseDouble(lines[i]);
+		}
+
+		// sample tests to see if helpers were giving expected answers
 	 	double[] f = {4.0, 4.0};
 	 	System.out.println(noBranchCost(2, f));
 
@@ -70,6 +85,7 @@ public class DbQuery {
 
 	}
 
+	// calculates the no branch cost of a plan
 	public static double noBranchCost(int k, double [] f) {
 		double cost = k*r + (k-1)*l + a;
 		for (int i = 0; i < f.length; i++) {
@@ -78,6 +94,7 @@ public class DbQuery {
 		return cost;
 	}
 
+	// calculates the logical and cost of a plan
 	public static double logicalAndCost(int k, double [] f, double [] p) {
 		double cost = k*r + (k-1)*l + t;
 
@@ -102,6 +119,7 @@ public class DbQuery {
 		return cost;
 	}
 
+	// calculates fixed cost
 	public static double fixedCost(int k, double [] f) {
 		double cost = k*r + (k-1)*l + t;
 
@@ -113,6 +131,7 @@ public class DbQuery {
 
 	}
 
+	// calculates the combined plan cost
 	public static double combinedPlanCost(int k, double [] p, double [] f, int k1, double [] p1, double [] f1) {
 		double cost = fixedCost(k,f);
 
