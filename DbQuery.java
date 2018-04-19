@@ -81,8 +81,7 @@ public class DbQuery {
 		System.out.println(fixedCost(2));
 
 		double[] p1 = {0.3, 0.2};
-		System.out.print("combined plan cost:");
-		System.out.println(combinedPlanCost(2, 0.06, 2, 0.4));
+		System.out.println(combinedPlanCost(2, 0.06, 12));
 
 		String[] funcs = {"f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"};
 
@@ -102,9 +101,58 @@ public class DbQuery {
 		int k = ex.length;
 		SubsetRecord[] A = createSubsets(k, ex, funcs);
 
+		optimalPlan(A);
+	}
+
+	public static void optimalPlan(SubsetRecord[] A) {
 		for (int i = 0; i < A.length; i++) {
-			System.out.println(A[i].bestCost);
-		}
+			ArrayList<String> s = A[i].index;
+			System.out.print("index:");
+			System.out.println(s);
+			ArrayList<ArrayList<String>> noIntersection = new ArrayList<ArrayList<String>>();
+
+			for (int j = 0; j< A.length; j++) {
+				if (Collections.disjoint(s,A[j].index)) {
+					noIntersection.add(A[j].index);
+				}
+			}
+
+			for (int k = 0; k < noIntersection.size(); k++) {
+				
+				ArrayList<String> sPrime = noIntersection.get(k);
+
+				 
+				SubsetRecord subset = A[i];
+				SubsetRecord subsetPrime = A[i];
+
+				for (int l = 0; l < A.length; l++) {
+					if (sPrime.equals(A[l].index)) {
+						subsetPrime = A[l];
+					}
+
+				}
+
+				System.out.println("subsets");
+				System.out.println(subsetPrime.index);
+				System.out.println(subset.index);
+
+				if (cMetricDominated(subset.product, subset.numberOfBasicTerms, subsetPrime.product, subsetPrime.numberOfBasicTerms)) {
+					System.out.println("Do Nothing");
+				} else if (subsetPrime.product <= 0.5 && dMetricDominated(subset.product, subset.numberOfBasicTerms, subsetPrime.product, subsetPrime.numberOfBasicTerms)) {
+					System.out.println("Do Nothing");
+				} else {
+					double cost = combinedPlanCost(subsetPrime.numberOfBasicTerms, subsetPrime.product, subset.bestCost);
+					System.out.println("cost");
+					System.out.println(cost);
+
+					ArrayList<String> union = new ArrayList<String>();
+					union.addAll(subsetPrime.index);
+					union.addAll(subset.index);
+					Collections.sort(union);
+				}
+			}
+		} 
+
 	}
 
 	public static SubsetRecord[] createSubsets(int k, double[] ex, String[] funcs) {
@@ -154,10 +202,30 @@ public class DbQuery {
 		return prod;
 	}
 
-	public static double[] getCMetric(double p, int k) {
+	public static boolean cMetricDominated(double p, int k, double pPrime, int kPrime) {
 		double c = (p - 1) / (fixedCost(k));
-		double[] CMetric = {c, p};
-		return CMetric;
+		double cPrime = (pPrime -1) / (fixedCost(kPrime));
+		double[] s = {c, p};
+		double[] sPrime = {cPrime, pPrime};
+
+		if (s[0] > sPrime[0] && s[1] > sPrime[1]) {
+			return true;
+		} else { 
+			return false;
+		}
+	}
+
+	public static boolean dMetricDominated(double p, int k, double pPrime, int kPrime) {
+		double c = (fixedCost(k));
+		double cPrime = (fixedCost(kPrime));
+		double[] s = {c, p};
+		double[] sPrime = {cPrime, pPrime};
+
+		if (s[0] > sPrime[0] && s[1] > sPrime[1]) {
+			return true;
+		} else { 
+			return false;
+		}
 	}
 
 	// calculates the no branch cost of a plan
@@ -201,7 +269,7 @@ public class DbQuery {
 	}
 
 	// calculates the combined plan cost
-	public static double combinedPlanCost(int k, double p, int k1, double p1) {
+	public static double combinedPlanCost(int k, double p, double C) {
 		double cost = fixedCost(k);
 
 		double q;
@@ -213,7 +281,7 @@ public class DbQuery {
 
 		cost += m * q;
 
-		cost += p * logicalAndCost(k1, p1);
+		cost += p * C;
 
 		return cost;
 
