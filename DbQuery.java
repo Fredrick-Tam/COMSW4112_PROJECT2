@@ -150,6 +150,12 @@ public class DbQuery {
 		return prod;
 	}
 
+	public static double[] getCMetric(double p, int k) {
+		double c = (p-1) / (fixedCost(k));
+		double[] CMetric = {c, p};
+		return CMetric;
+	}
+	
 	// calculates the no branch cost of a plan
 	public static double noBranchCost(int k) {
 		double cost = k*r + (k-1)*l + a;
