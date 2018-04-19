@@ -28,7 +28,7 @@ public class DbQuery {
 		String query = args[0];
 		String config = args[1];
 
-		
+
 		// make scanner objects to parse config and query files
 		File inputConfig = new File(config);
 		Scanner inConfig = new Scanner(inputConfig);
@@ -38,8 +38,7 @@ public class DbQuery {
 
 		// looping through config.txt to get config params and set them
 		// as global variables
-		while (inConfig.hasNextLine())
-		{
+		while (inConfig.hasNextLine()) {
 			String line = inConfig.nextLine();
 			String[] lines = line.split(" ");
 
@@ -63,34 +62,36 @@ public class DbQuery {
 		// {
 		// will put all code below this when it works
 		// }
-	 	
-	 	String line = inQuery.nextLine();
+
+		String line = inQuery.nextLine();
 		String[] lines = line.split(" ");
 		double[] selectivities = new double[lines.length];
 
-		for (int i=0; i < lines.length; i++) {
+		for (int i = 0; i < lines.length; i++) {
 			selectivities[i] = Double.parseDouble(lines[i]);
 		}
 
 		// sample tests to see if helpers were giving expected answers
-	 	double[] f = {4.0, 4.0};
-	 	System.out.println(noBranchCost(2));
+		double[] f = {4.0, 4.0};
+		System.out.println(noBranchCost(2));
 
-	 	double[] p = {0.8, 0.5};
-	 	System.out.println(logicalAndCost(2, 0.4));
+		double[] p = {0.8, 0.5};
+		System.out.println(logicalAndCost(2, 0.4));
 
-	 	System.out.println(fixedCost(2));
+		System.out.println(fixedCost(2));
 
-	 	double[] p1 = {0.3, 0.2};
-	 	System.out.print("combined plan cost:");
-	 	System.out.println(combinedPlanCost(2, 0.06, 2, 0.4));
+		double[] p1 = {0.3, 0.2};
+		System.out.print("combined plan cost:");
+		System.out.println(combinedPlanCost(2, 0.06, 2, 0.4));
 
-	 	String[] funcs = {"f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"};
-	 	double[] ex = {0.8, 0.5, 0.3, 0.2};
-	 	funcs = Arrays.copyOfRange(funcs, 0, ex.length);
+		String[] funcs = {"f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"};
 
-	 	// hashmap mapping functions to selectivities
-	 	// 	HashMap<String, Double> funcSelect = new HashMap<String, Double>();
+		createStringPlans(4, funcs);
+		double[] ex = {0.8, 0.5, 0.3, 0.2};
+		funcs = Arrays.copyOfRange(funcs, 0, ex.length);
+
+		// hashmap mapping functions to selectivities
+		// 	HashMap<String, Double> funcSelect = new HashMap<String, Double>();
 		// for (int i = 0; i < funcs.length; i++) {
 		// 	funcSelect.put(funcs[i], ex[i]);
 		// }
@@ -107,11 +108,11 @@ public class DbQuery {
 
 	public static SubsetRecord[] createSubsets(int k, double[] ex) {
 		// make subset array
-		SubsetRecord[] subsets = new SubsetRecord[(int) Math.pow(2, k)-1];
+		SubsetRecord[] subsets = new SubsetRecord[(int) Math.pow(2, k) - 1];
 
 		// generates all bitmap plans and then populates them to subset array
 		ArrayList<ArrayList<Double>> bitmapPlans = createPlans(k, ex);
-		
+
 		for (int i = 0; i < bitmapPlans.size(); i++) {
 			System.out.println(bitmapPlans.get(i));
 			int numberofBasicTerms = bitmapPlans.get(i).size();
@@ -137,28 +138,28 @@ public class DbQuery {
 
 			// Add subset to subset array
 			subsets[i] = subset;
-			
+
 		}
 		return subsets;
 	}
 
 	public static double selectivityProd(ArrayList<Double> list) {
 		double prod = 1;
-		for (int k = 0; k< list.size(); k++) {
+		for (int k = 0; k < list.size(); k++) {
 			prod *= list.get(k);
 		}
 		return prod;
 	}
 
 	public static double[] getCMetric(double p, int k) {
-		double c = (p-1) / (fixedCost(k));
+		double c = (p - 1) / (fixedCost(k));
 		double[] CMetric = {c, p};
 		return CMetric;
 	}
-	
+
 	// calculates the no branch cost of a plan
 	public static double noBranchCost(int k) {
-		double cost = k*r + (k-1)*l + a;
+		double cost = k * r + (k - 1) * l + a;
 		for (int i = 0; i < k; i++) {
 			cost += f;
 		}
@@ -167,26 +168,26 @@ public class DbQuery {
 
 	// calculates the logical and cost of a plan
 	public static double logicalAndCost(int k, double prod) {
-		double cost = k*r + (k-1)*l + t;
+		double cost = k * r + (k - 1) * l + t;
 
 		for (int i = 0; i < k; i++) {
 			cost += f;
 		}
 
-		cost += prod*a;
+		cost += prod * a;
 
 		if (prod > 0.5) {
 			prod = 1 - prod;
 		}
 
-		cost += m*prod;
+		cost += m * prod;
 
 		return cost;
 	}
 
 	// calculates fixed cost
 	public static double fixedCost(int k) {
-		double cost = k*r + (k-1)*l + t;
+		double cost = k * r + (k - 1) * l + t;
 
 		for (int i = 0; i < k; i++) {
 			cost += f;
@@ -202,12 +203,12 @@ public class DbQuery {
 
 		double q;
 		if (p > 0.5) {
-			q = 1-p;
+			q = 1 - p;
 		} else {
 			q = p;
 		}
 
-		cost += m*q;
+		cost += m * q;
 
 		cost += p * logicalAndCost(k1, p1);
 
@@ -221,14 +222,14 @@ public class DbQuery {
 		ArrayList<ArrayList<Double>> allPlans = new ArrayList<>();
 
 		// Generates all bit values from 0 to 2^k-1
-		for(int i = 1; i < numberOfPlans; i++) {
-			String bit = String.format("%4s", Integer.toBinaryString(i)).replace(' ', '0');
+		for (int i = 1; i < numberOfPlans; i++) {
+			String bit = String.format("%" + k + "s", Integer.toBinaryString(i)).replace(' ', '0');
 
 			ArrayList<Double> plan = new ArrayList<>();
 
 			// Generates all subsets depending on bit value
-			for(int n = 0; n < bit.length(); n++) {
-				if(bit.charAt(n) == '1') {
+			for (int n = 0; n < bit.length(); n++) {
+				if (bit.charAt(n) == '1') {
 					plan.add(f[n]);
 				}
 			}
@@ -236,7 +237,31 @@ public class DbQuery {
 			allPlans.add(plan);
 		}
 
-		for(ArrayList<Double> x : allPlans) System.out.println(x);
+		for (ArrayList<Double> x : allPlans) System.out.println(x);
+		return allPlans;
+	}
+
+	public static ArrayList<ArrayList<String>> createStringPlans(int k, String[] f) {
+		int numberOfPlans = (int) Math.pow(2, k);
+		ArrayList<ArrayList<String>> allPlans = new ArrayList<>();
+
+		// Generates all bit values from 0 to 2^k-1
+		for (int i = 1; i < numberOfPlans; i++) {
+			String bit = String.format("%" + k + "s", Integer.toBinaryString(i)).replace(' ', '0');
+
+			ArrayList<String> plan = new ArrayList<>();
+
+			// Generates all subsets depending on bit value
+			for (int n = 0; n < bit.length(); n++) {
+				if (bit.charAt(n) == '1') {
+					plan.add(f[n]);
+				}
+			}
+
+			allPlans.add(plan);
+		}
+
+		for (ArrayList<String> x : allPlans) System.out.println(x);
 		return allPlans;
 	}
 
