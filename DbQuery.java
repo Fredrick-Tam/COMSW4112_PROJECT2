@@ -86,8 +86,9 @@ public class DbQuery {
 
 		String[] funcs = {"f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"};
 
-		createStringPlans(4, funcs);
 		double[] ex = {0.8, 0.5, 0.3, 0.2};
+		createStringPlans(ex.length, funcs);
+
 		funcs = Arrays.copyOfRange(funcs, 0, ex.length);
 
 		// hashmap mapping functions to selectivities
@@ -99,19 +100,20 @@ public class DbQuery {
 		// System.out.println(Arrays.asList(funcSelect));
 
 		int k = ex.length;
-		SubsetRecord[] A = createSubsets(k, ex);
+		SubsetRecord[] A = createSubsets(k, ex, funcs);
 
 		for (int i = 0; i < A.length; i++) {
 			System.out.println(A[i].bestCost);
 		}
 	}
 
-	public static SubsetRecord[] createSubsets(int k, double[] ex) {
+	public static SubsetRecord[] createSubsets(int k, double[] ex, String[] funcs) {
 		// make subset array
 		SubsetRecord[] subsets = new SubsetRecord[(int) Math.pow(2, k) - 1];
 
 		// generates all bitmap plans and then populates them to subset array
 		ArrayList<ArrayList<Double>> bitmapPlans = createPlans(k, ex);
+		ArrayList<ArrayList<String>> stringPlans = createStringPlans(k, funcs);
 
 		for (int i = 0; i < bitmapPlans.size(); i++) {
 			System.out.println(bitmapPlans.get(i));
@@ -121,11 +123,12 @@ public class DbQuery {
 			double prod = selectivityProd(bitmapPlans.get(i));
 
 			// creating subset record
-			SubsetRecord subset = new SubsetRecord(numberofBasicTerms, prod);
+			SubsetRecord subset = new SubsetRecord(numberofBasicTerms, prod, stringPlans.get(i));
 
 			// get logical and no branch costs
 			double logicalAndCost = logicalAndCost(numberofBasicTerms, prod);
 			double noBranchCost = noBranchCost(numberofBasicTerms);
+			System.out.println(subset.index);
 
 			// set subset cost to logical cost
 			subset.bestCost = logicalAndCost;
