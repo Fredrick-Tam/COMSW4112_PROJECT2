@@ -71,18 +71,6 @@ public class DbQuery {
 			selectivities[i] = Double.parseDouble(lines[i]);
 		}
 
-		// sample tests to see if helpers were giving expected answers
-		double[] f = {4.0, 4.0};
-		System.out.println(noBranchCost(2));
-
-		double[] p = {0.8, 0.5};
-		System.out.println(logicalAndCost(2, 0.4));
-
-		System.out.println(fixedCost(2));
-
-		double[] p1 = {0.3, 0.2};
-		System.out.println(combinedPlanCost(2, 0.06, 12));
-
 		String[] funcs = {"f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"};
 
 		double[] ex = {0.8, 0.5, 0.3, 0.2};
@@ -90,41 +78,36 @@ public class DbQuery {
 
 		funcs = Arrays.copyOfRange(funcs, 0, ex.length);
 
-		// hashmap mapping functions to selectivities
-		// 	HashMap<String, Double> funcSelect = new HashMap<String, Double>();
-		// for (int i = 0; i < funcs.length; i++) {
-		// 	funcSelect.put(funcs[i], ex[i]);
-		// }
-		// prints out function with respective selectivities
-		// System.out.println(Arrays.asList(funcSelect));
-
 		int k = ex.length;
 		SubsetRecord[] A = createSubsets(k, ex, funcs);
 
 		optimalPlan(A);
 	}
 
+	// uses subset table to calculate optimal plan
 	public static void optimalPlan(SubsetRecord[] A) {
+
+		// loop through all subsets of A
 		for (int i = 0; i < A.length; i++) {
 			ArrayList<String> s = A[i].index;
-			System.out.print("index:");
-			System.out.println(s);
 			ArrayList<ArrayList<String>> noIntersection = new ArrayList<ArrayList<String>>();
 
+			// for given subset s, find s' where s interesection s' = null
 			for (int j = 0; j< A.length; j++) {
 				if (Collections.disjoint(s,A[j].index)) {
 					noIntersection.add(A[j].index);
 				}
 			}
 
+			// loop through s' 
 			for (int k = 0; k < noIntersection.size(); k++) {
 				
 				ArrayList<String> sPrime = noIntersection.get(k);
 
-				 
 				SubsetRecord subset = A[i];
 				SubsetRecord subsetPrime = A[i];
 
+				// setting subsetPrime to s' value in table
 				for (int l = 0; l < A.length; l++) {
 					if (sPrime.equals(A[l].index)) {
 						subsetPrime = A[l];
@@ -132,29 +115,56 @@ public class DbQuery {
 
 				}
 
-				System.out.println("subsets");
-				System.out.println(subsetPrime.index);
-				System.out.println(subset.index);
-
+				// fins out if s dominates s' in terms of c-metric
 				if (cMetricDominated(subset.product, subset.numberOfBasicTerms, subsetPrime.product, subsetPrime.numberOfBasicTerms)) {
-					System.out.println("Do Nothing");
-				} else if (subsetPrime.product <= 0.5 && dMetricDominated(subset.product, subset.numberOfBasicTerms, subsetPrime.product, subsetPrime.numberOfBasicTerms)) {
-					System.out.println("Do Nothing");
-				} else {
-					double cost = combinedPlanCost(subsetPrime.numberOfBasicTerms, subsetPrime.product, subset.bestCost);
-					System.out.println("cost");
-					System.out.println(cost);
+					// do nothing
 
+				// find out if s dominates s' in terms of d-metric
+				} else if (subsetPrime.product <= 0.5 && dMetricDominated(subset.product, subset.numberOfBasicTerms, subsetPrime.product, subsetPrime.numberOfBasicTerms)) {
+					// do Nothing
+				} else {
+					// calculate cost of combined plan (s && s')
+					double cost = combinedPlanCost(subsetPrime.numberOfBasicTerms, subsetPrime.product, subset.bestCost);
+
+					// get union of subsets s U s'
 					ArrayList<String> union = new ArrayList<String>();
 					union.addAll(subsetPrime.index);
 					union.addAll(subset.index);
+
+					// sort union so that it matches order convention
 					Collections.sort(union);
+
+					// find subset record for union values
+					// if combined cost is smaller than cost of subset
+					// update its cost and left and right children
+					for (int w = 0; w < A.length; w ++) {
+						if (A[w].index.equals(union)) {
+							if (cost < A[w].bestCost) {
+								A[w].bestCost = cost;
+								A[w].leftChild = subsetPrime.index;
+								A[w].rightChild = subset.index;
+							}
+						}
+					}
 				}
 			}
 		} 
 
+		System.out.print("optimal plan left child: ");
+		System.out.println(A[A.length-1].leftChild);
+
+		System.out.print("optimal plan right child: ");
+		System.out.println(A[A.length-1].rightChild);
+
+		System.out.print("did optimal plan use no-branch: ");
+		System.out.println(A[A.length-1].noBranch);
+
+		System.out.print("best cost for query: ");
+		System.out.println(A[A.length-1].bestCost);
+
 	}
 
+	// creates A[2^k-1] of subset records
 	public static SubsetRecord[] createSubsets(int k, double[] ex, String[] funcs) {
 		// make subset array
 		SubsetRecord[] subsets = new SubsetRecord[(int) Math.pow(2, k) - 1];
@@ -164,7 +174,6 @@ public class DbQuery {
 		ArrayList<ArrayList<String>> stringPlans = createStringPlans(k, funcs);
 
 		for (int i = 0; i < bitmapPlans.size(); i++) {
-			System.out.println(bitmapPlans.get(i));
 			int numberofBasicTerms = bitmapPlans.get(i).size();
 
 			// calcualte combined selectivity of subset
@@ -176,7 +185,6 @@ public class DbQuery {
 			// get logical and no branch costs
 			double logicalAndCost = logicalAndCost(numberofBasicTerms, prod);
 			double noBranchCost = noBranchCost(numberofBasicTerms);
-			System.out.println(subset.index);
 
 			// set subset cost to logical cost
 			subset.bestCost = logicalAndCost;
@@ -189,11 +197,11 @@ public class DbQuery {
 
 			// Add subset to subset array
 			subsets[i] = subset;
-
 		}
 		return subsets;
 	}
 
+	// helper method to find combined selectivity
 	public static double selectivityProd(ArrayList<Double> list) {
 		double prod = 1;
 		for (int k = 0; k < list.size(); k++) {
@@ -202,6 +210,7 @@ public class DbQuery {
 		return prod;
 	}
 
+	// finds out if s dominates s' in c-metric
 	public static boolean cMetricDominated(double p, int k, double pPrime, int kPrime) {
 		double c = (p - 1) / (fixedCost(k));
 		double cPrime = (pPrime -1) / (fixedCost(kPrime));
@@ -215,6 +224,7 @@ public class DbQuery {
 		}
 	}
 
+	// finds out if s dominates s' in d-metric
 	public static boolean dMetricDominated(double p, int k, double pPrime, int kPrime) {
 		double c = (fixedCost(k));
 		double cPrime = (fixedCost(kPrime));
@@ -244,15 +254,12 @@ public class DbQuery {
 		for (int i = 0; i < k; i++) {
 			cost += f;
 		}
-
 		cost += prod * a;
 
 		if (prod > 0.5) {
 			prod = 1 - prod;
 		}
-
 		cost += m * prod;
-
 		return cost;
 	}
 
@@ -263,9 +270,7 @@ public class DbQuery {
 		for (int i = 0; i < k; i++) {
 			cost += f;
 		}
-
 		return cost;
-
 	}
 
 	// calculates the combined plan cost
@@ -278,13 +283,9 @@ public class DbQuery {
 		} else {
 			q = p;
 		}
-
 		cost += m * q;
-
 		cost += p * C;
-
 		return cost;
-
 	}
 
 	// Creates a bitmap that generates all subsets
@@ -308,10 +309,11 @@ public class DbQuery {
 			allPlans.add(plan);
 		}
 
-		for (ArrayList<Double> x : allPlans) System.out.println(x);
+		// for (ArrayList<Double> x : allPlans) System.out.println(x);
 		return allPlans;
 	}
 
+	// creates a string representation of & terms
 	public static ArrayList<ArrayList<String>> createStringPlans(int k, String[] f) {
 		int numberOfPlans = (int) Math.pow(2, k);
 		ArrayList<ArrayList<String>> allPlans = new ArrayList<>();
@@ -332,7 +334,7 @@ public class DbQuery {
 			allPlans.add(plan);
 		}
 
-		for (ArrayList<String> x : allPlans) System.out.println(x);
+		// for (ArrayList<String> x : allPlans) System.out.println(x);
 		return allPlans;
 	}
 

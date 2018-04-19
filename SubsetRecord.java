@@ -5,8 +5,8 @@ public class SubsetRecord {
     double product; // product of selectivities
     boolean noBranch;
     double bestCost;
-    int leftChild;
-    int rightChild;
+    ArrayList<String> leftChild;
+    ArrayList<String> rightChild;
 
     public SubsetRecord(int n, double p, ArrayList<String> subset) {
         index = subset;
@@ -14,7 +14,7 @@ public class SubsetRecord {
         product = p;
         noBranch = false;
         bestCost = 0;
-        leftChild = 0;
-        rightChild = 0;
+        leftChild = null;
+        rightChild = null;
     }
 }
