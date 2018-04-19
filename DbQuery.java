@@ -58,34 +58,35 @@ public class DbQuery {
 			}
 		}
 
-		// while (inQuery.hasNextLine())
-		// {
-		// will put all code below this when it works
-		// }
+		// parse query.txt and find optimal cost for every line of selectivities
+		while (inQuery.hasNextLine())
+		{
+			
+			String line = inQuery.nextLine();
+			String[] lines = line.split(" ");
+			double[] selectivities = new double[lines.length];
 
-		String line = inQuery.nextLine();
-		String[] lines = line.split(" ");
-		double[] selectivities = new double[lines.length];
+			for (int i = 0; i < lines.length; i++) {
+				selectivities[i] = Double.parseDouble(lines[i]);
+			}
 
-		for (int i = 0; i < lines.length; i++) {
-			selectivities[i] = Double.parseDouble(lines[i]);
+			String[] funcs = {"f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"};
+
+			createStringPlans(selectivities.length, funcs);
+
+			funcs = Arrays.copyOfRange(funcs, 0, selectivities.length);
+
+			int k = selectivities.length;
+
+			SubsetRecord[] A = createSubsets(k, selectivities, funcs);
+
+			optimalPlan(A, selectivities);
 		}
-
-		String[] funcs = {"f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"};
-
-		double[] ex = {0.8, 0.5, 0.3, 0.2};
-		createStringPlans(ex.length, funcs);
-
-		funcs = Arrays.copyOfRange(funcs, 0, ex.length);
-
-		int k = ex.length;
-		SubsetRecord[] A = createSubsets(k, ex, funcs);
-
-		optimalPlan(A);
+		System.out.println("==================================================================");
 	}
 
 	// uses subset table to calculate optimal plan
-	public static void optimalPlan(SubsetRecord[] A) {
+	public static void optimalPlan(SubsetRecord[] A, double[] ex) {
 
 		// loop through all subsets of A
 		for (int i = 0; i < A.length; i++) {
@@ -149,7 +150,12 @@ public class DbQuery {
 				}
 			}
 		} 
-
+		System.out.println("==================================================================");
+		for (int v = 0; v < ex.length; v++) {
+			System.out.print(ex[v] + " ");
+		}
+		System.out.println();
+		System.out.println("------------------------------------------------------------------");
 		System.out.print("optimal plan left child: ");
 		System.out.println(A[A.length-1].leftChild);
 
@@ -158,8 +164,8 @@ public class DbQuery {
 
 		System.out.print("did optimal plan use no-branch: ");
 		System.out.println(A[A.length-1].noBranch);
-
-		System.out.print("best cost for query: ");
+		System.out.println("------------------------------------------------------------------");
+		System.out.print("cost: ");
 		System.out.println(A[A.length-1].bestCost);
 
 	}
