@@ -90,7 +90,6 @@ public class DbQuery {
 
 		for (int j = 0; j < A.length; j++) {
 			indexes.put(A[j].index, j);
-			System.out.println(A[j].rightChild);
 		}
 
 		int index = indexes.get(i);
@@ -98,8 +97,6 @@ public class DbQuery {
 	}
 
 	// public static String getPlan(SubsetRecord[] A, ArrayList<String> i) {
-	// 	System.out.println("terms:");
-	// 	System.out.println(i);
 	// 	int subset = index(A, i);
 
 	// 	if (A[subset].numberOfBasicTerms <= 1 || A[subset].numberOfBasicTerms <= 2) {
@@ -163,18 +160,14 @@ public class DbQuery {
 
 					// sort union so that it matches order convention
 					Collections.sort(union);
-
 					// find subset record for union values
 					// if combined cost is smaller than cost of subset
 					// update its cost and left and right children
-					for (int w = 0; w < A.length; w ++) {
-						if (A[w].index.equals(union)) {
-							if (cost < A[w].bestCost) {
-								A[w].bestCost = cost;
-								A[w].leftChild = subsetPrime.index;
-								A[w].rightChild = subset.index;
-							}
-						}
+					int w = index(A, union);
+					if (cost < A[w].bestCost) {
+						A[w].bestCost = cost;
+						A[w].leftChild = subsetPrime.index;
+						A[w].rightChild = subset.index;
 					}
 				}
 			}
@@ -185,7 +178,7 @@ public class DbQuery {
 		}
 		System.out.println();
 		System.out.println("------------------------------------------------------------------");
-		//System.out.println(getPlan(A, A[A.length-1].index));
+		System.out.println(getPlan(A, A[A.length-1].index));
 
 
 		// System.out.print("optimal plan left child: ");
