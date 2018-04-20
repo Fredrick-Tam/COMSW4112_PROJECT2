@@ -70,7 +70,7 @@ public class DbQuery {
 				selectivities[i] = Double.parseDouble(lines[i]);
 			}
 
-			String[] funcs = {"f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10"};
+			String[] funcs = {"t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10"};
 
 			createStringPlans(selectivities.length, funcs);
 
@@ -84,6 +84,35 @@ public class DbQuery {
 		}
 		System.out.println("==================================================================");
 	}
+
+	public static int index(SubsetRecord[] A, ArrayList<String> i) {
+		HashMap<ArrayList<String>, Integer> indexes = new HashMap<ArrayList<String>, Integer>();
+
+		for (int j = 0; j < A.length; j++) {
+			indexes.put(A[j].index, j);
+			System.out.println(A[j].rightChild);
+		}
+
+		int index = indexes.get(i);
+		return index;
+	}
+
+	// public static String getPlan(SubsetRecord[] A, ArrayList<String> i) {
+	// 	System.out.println("terms:");
+	// 	System.out.println(i);
+	// 	int subset = index(A, i);
+
+	// 	if (A[subset].numberOfBasicTerms <= 1 || A[subset].numberOfBasicTerms <= 2) {
+	// 		System.out.println(A[subset].code);
+	// 		return A[subset].code;
+	// 	}
+
+	// 	String leftChildCode = getPlan(A, A[subset].leftChild);
+	// 	String rightChildCode = getPlan(A, A[subset].rightChild);
+	// 	A[subset].code = leftChildCode + " && " + rightChildCode;
+	// 	return A[subset].code;
+
+	// }
 
 	// uses subset table to calculate optimal plan
 	public static void optimalPlan(SubsetRecord[] A, double[] ex) {
@@ -156,18 +185,20 @@ public class DbQuery {
 		}
 		System.out.println();
 		System.out.println("------------------------------------------------------------------");
-		System.out.print("optimal plan left child: ");
-		System.out.println(A[A.length-1].leftChild);
+		//System.out.println(getPlan(A, A[A.length-1].index));
 
-		System.out.print("optimal plan right child: ");
-		System.out.println(A[A.length-1].rightChild);
+
+		// System.out.print("optimal plan left child: ");
+		// System.out.println(A[A.length-1].leftChild);
+
+		// System.out.print("optimal plan right child: ");
+		// System.out.println(A[A.length-1].rightChild);
 
 		System.out.print("did optimal plan use no-branch: ");
 		System.out.println(A[A.length-1].noBranch);
 		System.out.println("------------------------------------------------------------------");
 		System.out.print("cost: ");
 		System.out.println(A[A.length-1].bestCost);
-
 	}
 
 	// creates A[2^k-1] of subset records

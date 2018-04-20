@@ -7,6 +7,7 @@ public class SubsetRecord {
     double bestCost;
     ArrayList<String> leftChild;
     ArrayList<String> rightChild;
+    String code;
 
     public SubsetRecord(int n, double p, ArrayList<String> subset) {
         index = subset;
@@ -16,5 +17,20 @@ public class SubsetRecord {
         bestCost = 0;
         leftChild = null;
         rightChild = null;
+        code = generateCode(subset);
     }
+
+    public String generateCode(ArrayList<String> subset) {
+        String code = "(" + subset.get(0);
+
+        for (int i = 1; i < subset.size(); i++) {
+            code += " & " + subset.get(i);
+        }
+
+        code += ")";
+
+        return code;
+    }
+
+
 }
