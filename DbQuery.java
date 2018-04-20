@@ -70,7 +70,7 @@ public class DbQuery {
 			selectivities[i] = Double.parseDouble(lines[i]);
 		}
 
-		String[] funcs = {"t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10"};
+		String[] funcs = {"t1[o1[i]]", "t2[o2[i]]", "t3[o1[3]]", "t4[o4[i]]", "t5[o5[i]]", "t6[o6[i]]", "t7[o7[i]]", "t8[o8[i]]", "t9[o9[i]]", "t10[o10[i]]"};
 
 
 		createStringPlans(selectivities.length, funcs);
@@ -205,27 +205,53 @@ public class DbQuery {
 		
 		ArrayList<String> rightMost = new ArrayList<String>();
 		rightMost = getRightMost(A,A[A.length-1].index);
-		System.out.println("right most side we check for no branch for" + rightMost);
-		String plan = getPlan(A, A[A.length-1].index);
-		System.out.println(plan);
 
+		// get best plan for algorithm
+		String plan = getPlan(A, A[A.length-1].index);
+
+		// if right most plan uses no branch cost
 		if (A[index(A, rightMost)].noBranch == true) {
-			System.out.println("no branch");
-			System.out.println("if() {");
-			System.out.println("	answer[j] = i;");	
-			System.out.println("	j += ();");
-			System.out.println("}");
+			noBranchPlan(plan);
 		} else {
-			System.out.println("branch");
-			System.out.println("if() {");
-			System.out.println("	answer[j++] = i;");
-			System.out.println("}");
+			// if right most plan does not use branch cost
+			// generates plan
+			branchPlan(plan);
 		}
 		System.out.println("------------------------------------------------------------------");
 		System.out.print("cost: ");
 		System.out.println(A[A.length-1].bestCost);
 	}
 
+	public static void branchPlan(String plan) {
+		System.out.println("if(" + plan + ") {");
+		System.out.println("	answer[j++] = i;");
+		System.out.println("}");
+	}
+
+	public static void noBranchPlan(String plan) {
+		String[] parts = plan.split(" && ");
+
+		if (parts.length == 2) {
+			System.out.println("if("+parts[0]+") {");
+			System.out.println("	answer[j] = i;");
+			System.out.println("	j += (" + parts[1] +");");
+			System.out.println("}");
+		} else {
+			System.out.print("if(");
+			System.out.print("(" + parts[0] + ")");
+
+			for (int k = 1; k < parts.length-1; k++) {
+				System.out.print(" && " + "(" + parts[k] + ")");
+			}
+			System.out.println(") {");
+			System.out.println("	answer[j] = i;");
+			System.out.print("	j += (");
+			System.out.print(parts[parts.length-1]);
+			System.out.println(");");
+			System.out.println("}");
+		}
+
+	}
 	// creates A[2^k-1] of subset records
 	public static SubsetRecord[] createSubsets(int k, double[] ex, String[] funcs) {
 		// make subset array
