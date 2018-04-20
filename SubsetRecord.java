@@ -21,13 +21,11 @@ public class SubsetRecord {
     }
 
     public String generateCode(ArrayList<String> subset) {
-        String code = "(" + subset.get(0);
+        String code = subset.get(0);
 
         for (int i = 1; i < subset.size(); i++) {
             code += " & " + subset.get(i);
         }
-
-        code += ")";
 
         return code;
     }

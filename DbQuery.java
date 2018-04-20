@@ -62,27 +62,28 @@ public class DbQuery {
 		while (inQuery.hasNextLine())
 		{
 			
-			String line = inQuery.nextLine();
-			String[] lines = line.split(" ");
-			double[] selectivities = new double[lines.length];
+		String line = inQuery.nextLine();
+		String[] lines = line.split(" ");
+		double[] selectivities = new double[lines.length];
 
-			for (int i = 0; i < lines.length; i++) {
-				selectivities[i] = Double.parseDouble(lines[i]);
-			}
-
-			String[] funcs = {"t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10"};
-
-			createStringPlans(selectivities.length, funcs);
-
-			funcs = Arrays.copyOfRange(funcs, 0, selectivities.length);
-
-			int k = selectivities.length;
-
-			SubsetRecord[] A = createSubsets(k, selectivities, funcs);
-
-			optimalPlan(A, selectivities);
+		for (int i = 0; i < lines.length; i++) {
+			selectivities[i] = Double.parseDouble(lines[i]);
 		}
-		System.out.println("==================================================================");
+
+		String[] funcs = {"t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10"};
+
+
+		createStringPlans(selectivities.length, funcs);
+
+		funcs = Arrays.copyOfRange(funcs, 0, selectivities.length);
+
+		int k = selectivities.length;
+
+		SubsetRecord[] A = createSubsets(k, selectivities, funcs);
+
+		optimalPlan(A, selectivities);
+	}
+	System.out.println("==================================================================");
 	}
 
 	public static int index(SubsetRecord[] A, ArrayList<String> i) {
@@ -92,36 +93,46 @@ public class DbQuery {
 			indexes.put(A[j].index, j);
 		}
 
-		int index = indexes.get(i);
+		int index = -1;
+
+		if (indexes.containsKey(i)){
+			index = indexes.get(i);
+		} else {
+			index = -1;
+		}
 		return index;
 	}
 
-	// public static String getPlan(SubsetRecord[] A, ArrayList<String> i) {
-	// 	int subset = index(A, i);
+	public static ArrayList<String> getRightMost(SubsetRecord[] A, ArrayList<String> i) {
+		int subset = index(A, i);
 
-	// 	if (A[subset].numberOfBasicTerms <= 1 || A[subset].numberOfBasicTerms <= 2) {
-	// 		System.out.println(A[subset].code);
-	// 		return A[subset].code;
-	// 	}
-
-	// 	String leftChildCode = getPlan(A, A[subset].leftChild);
-	// 	String rightChildCode = getPlan(A, A[subset].rightChild);
-	// 	A[subset].code = leftChildCode + " && " + rightChildCode;
-	// 	return A[subset].code;
-
-	// }
-
-	public static void printnoBranchPlan(String[] terms) {
-		System.out.println("if() {");
-		System.out.println("	answer[j++] = i;");
-		System.out.println("}");
+		if (A[subset].rightChild == null) {
+			return A[subset].index;
+		}
+		return getRightMost(A, A[subset].rightChild);
 	}
 
-	public static void printBranchPlan(String[] terms) {
-		System.out.println("if() {");
-		System.out.println("	answer[j] = i;");	
-		System.out.println("	j += ();");
-		System.out.println("}");
+	public static String getPlan(SubsetRecord[] A, ArrayList<String> i) {
+		int subset = index(A, i);
+
+		if (i == null) {
+			return "";
+		}
+
+		String leftChildCode = getPlan(A, A[subset].leftChild);
+		String rightChildCode = getPlan(A, A[subset].rightChild);
+
+		if (leftChildCode.equals("") && rightChildCode.equals("")) {
+			;
+		} else if (leftChildCode.equals("") && !rightChildCode.equals("")) {
+			A[subset].code = rightChildCode;
+		} else if (rightChildCode.equals("") && !leftChildCode.equals("")) {
+			A[subset].code = leftChildCode;
+		} else {
+			A[subset].code = leftChildCode + " && " + rightChildCode;
+		}
+		return A[subset].code;
+
 	}
 
 
@@ -153,7 +164,6 @@ public class DbQuery {
 					if (sPrime.equals(A[l].index)) {
 						subsetPrime = A[l];
 					}
-
 				}
 
 				// fins out if s dominates s' in terms of c-metric
@@ -166,7 +176,6 @@ public class DbQuery {
 				} else {
 					// calculate cost of combined plan (s && s')
 					double cost = combinedPlanCost(subsetPrime.numberOfBasicTerms, subsetPrime.product, subset.bestCost);
-
 					// get union of subsets s U s'
 					ArrayList<String> union = new ArrayList<String>();
 					union.addAll(subsetPrime.index);
@@ -192,17 +201,26 @@ public class DbQuery {
 		}
 		System.out.println();
 		System.out.println("------------------------------------------------------------------");
-		//System.out.println(getPlan(A, A[A.length-1].index));
 
+		
+		ArrayList<String> rightMost = new ArrayList<String>();
+		rightMost = getRightMost(A,A[A.length-1].index);
+		System.out.println("right most side we check for no branch for" + rightMost);
+		String plan = getPlan(A, A[A.length-1].index);
+		System.out.println(plan);
 
-		// System.out.print("optimal plan left child: ");
-		// System.out.println(A[A.length-1].leftChild);
-
-		// System.out.print("optimal plan right child: ");
-		// System.out.println(A[A.length-1].rightChild);
-
-		System.out.print("did optimal plan use no-branch: ");
-		System.out.println(A[A.length-1].noBranch);
+		if (A[index(A, rightMost)].noBranch == true) {
+			System.out.println("no branch");
+			System.out.println("if() {");
+			System.out.println("	answer[j] = i;");	
+			System.out.println("	j += ();");
+			System.out.println("}");
+		} else {
+			System.out.println("branch");
+			System.out.println("if() {");
+			System.out.println("	answer[j++] = i;");
+			System.out.println("}");
+		}
 		System.out.println("------------------------------------------------------------------");
 		System.out.print("cost: ");
 		System.out.println(A[A.length-1].bestCost);
@@ -300,10 +318,14 @@ public class DbQuery {
 		}
 		cost += prod * a;
 
-		if (prod > 0.5) {
-			prod = 1 - prod;
+		double q = 0;
+
+		if (prod <= 0.5) {
+			q = prod;
+		} else {
+			q = 1 - prod;
 		}
-		cost += m * prod;
+		cost += m * q;
 		return cost;
 	}
 
