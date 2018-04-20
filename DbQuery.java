@@ -111,6 +111,20 @@ public class DbQuery {
 
 	// }
 
+	public static void printnoBranchPlan(String[] terms) {
+		System.out.println("if() {");
+		System.out.println("	answer[j++] = i;");
+		System.out.println("}");
+	}
+
+	public static void printBranchPlan(String[] terms) {
+		System.out.println("if() {");
+		System.out.println("	answer[j] = i;");	
+		System.out.println("	j += ();");
+		System.out.println("}");
+	}
+
+
 	// uses subset table to calculate optimal plan
 	public static void optimalPlan(SubsetRecord[] A, double[] ex) {
 
@@ -178,7 +192,7 @@ public class DbQuery {
 		}
 		System.out.println();
 		System.out.println("------------------------------------------------------------------");
-		System.out.println(getPlan(A, A[A.length-1].index));
+		//System.out.println(getPlan(A, A[A.length-1].index));
 
 
 		// System.out.print("optimal plan left child: ");

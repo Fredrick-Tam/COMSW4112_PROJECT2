@@ -30,7 +30,7 @@ We decided to make a SubsetRecord class which contained all the necessary
 information for each subset that is put in the array A of size 2^k-1. 
 Java program accepts config.txt and query.txt as parameters that it processes
 based on the algorithm in paper to produce optimal plans which are printed
-to standard output. This output is then copied into output.txt
+to standard output. This output is then piped into output.txt
 
 
 
